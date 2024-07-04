@@ -2,7 +2,6 @@
 This script uses Mediapipe to perform real-time face landmark detection and annotation
 on webcam feed. It detects the face landmarks and highlights the eye and iris regions.
 """
-import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
