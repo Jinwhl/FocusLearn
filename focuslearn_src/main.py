@@ -1,9 +1,9 @@
-import time
-from Utils import process_frame as pf
 import cv2
+import time
 import json
-from flask import Flask, jsonify, request
 import numpy as np
+from Utils import process_frame as pf
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -16,40 +16,30 @@ def online_test_for_local_laptop():
         time.sleep(1)
         yield json.dumps(coordinates)
 
-@app.route('/upload', methods=['POST'])
-def upload_image():
-    if 'image' not in request.files:
-        return "No image file found in the request", 400
-    
-    file = request.files['image']
-    file.save('./Resources/' + file.filename)
-    
-    np_img = np.array(file, dtype=np.uint8)
-    coordinates = pf.get_centroid_coords_from(np_img)
-
-    with open('./Resources/coords.txt', 'w') as f:
-        f.write(json.dumps(coordinates))
-        
 data_storage = []
+request_id = 0
 
 @app.route('/test', methods=['POST'])
 def post_data():
+    global request_id
+    
     data = request.get_json()
     np_img = np.array(data, dtype=np.uint8)
     coordinates = pf.get_centroid_coords_from(np_img)
+    
     data_storage.append(coordinates)
+    request_id += 1
     
-    # result = logic(coordinates) # TODO
-    # data_storage.append(result)
+    response = {
+        "request_id": request_id,
+        "result": data_storage[-1],
+    }
     
-    print(coordinates)
-    
-    return jsonify({"status": "success", "data": coordinates}), 200
+    return jsonify(response), 200
 
 @app.route('/test', methods=['GET'])
 def get_data():
-    return jsonify({"status": "success", "data": data_storage}), 200
-
+    return jsonify({"data": data_storage[-1], "request_id": request_id}), 200
 
 if __name__ == "__main__":
-    app.run(host='25.36.163.151', port=5000)
+    app.run(host='0.0.0.0', port=5000)
