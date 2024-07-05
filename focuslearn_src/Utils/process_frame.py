@@ -29,4 +29,23 @@ def get_centroid_coords_from(frame):
                 'right_iris': R_iris_C
             }
         
-        return coordinates
+        L_x1, L_x2 = logic(left_eye_landmarks, 0.45)
+        R_x1, R_x2 = logic(right_eye_landmarks, 0.45)
+
+        if (L_x1 < L_iris_C[0] < L_x2) or (R_x1 < R_iris_C[0] < R_x2):
+            return 1
+        else:
+            return 0
+        
+        # return coordinates
+    
+def logic(landmarks, ratio):
+    x_coords = [point[0] for point in landmarks]
+
+    min_x = min(x_coords)
+    max_x = max(x_coords)
+    
+    x1 = (ratio * max_x + (1 - ratio) * min_x)
+    x2 = ((1 - ratio) * max_x + ratio * min_x)
+
+    return x1, x2
